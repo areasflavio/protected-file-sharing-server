@@ -13,8 +13,19 @@ const APP_URL = process.env.APP_URL || '';
 const server = express();
 server.use(express.urlencoded({ extended: true }));
 
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads');
+  },
+  filename: (req, file, cb) => {
+    const name = file.originalname.split('.')[0];
+    const ext = file.originalname.split('.')[1];
+    cb(null, `${name}_${Date.now()}.${ext}`);
+  },
+});
+
 const upload = multer({
-  dest: 'uploads',
+  storage: multerStorage,
 });
 
 mongoose.connect(DATABASE_URL);
@@ -25,6 +36,8 @@ server.get('/', (req, res) => {
 
 server.post('/upload', upload.single('file'), async (req, res) => {
   const { password } = req.body;
+
+  if (!req.file) return;
 
   const fileData = {
     path: req.file?.path,
@@ -55,7 +68,7 @@ async function handleDownload(req: Request, res: Response) {
     return res.status(400).json({ error: 'File not found' });
   }
 
-  if (!password) {
+  if (file.password && !password) {
     return res.status(400).json({ error: 'No password was provided.' });
   }
 

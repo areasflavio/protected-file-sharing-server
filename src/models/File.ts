@@ -5,6 +5,7 @@ interface IFile {
   originalName: string;
   password?: string;
   downloadCounter: number;
+  createdAt: Date;
 }
 
 const fileSchema = new Schema<IFile>({
@@ -21,6 +22,10 @@ const fileSchema = new Schema<IFile>({
     type: Number,
     required: true,
     default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 
